@@ -1,0 +1,13 @@
+---
+- name: CIS Benchmark mapping
+  hosts: all
+  become: true
+  roles:
+    - name: "RHEL0-CIS"
+      vars:
+        setup_audit: true
+        run_audit: true
+        goss_url: https://github.com/goss-org/goss/releases/download/v0.4.9/goss-linux-arm64
+        goss_version:
+          release: v0.4.9
+          checksum: "sha256:87dd36cfa1b8b50554e6e2ca29168272e26755b19ba5438341f7c66b36decc19"
