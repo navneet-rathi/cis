@@ -3,7 +3,7 @@
   hosts: all
   become: true
   roles:
-    - name: "RHEL0-CIS"
+    - name: "RHEL9-CIS"
       vars:
         setup_audit: true
         run_audit: true
