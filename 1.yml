@@ -11,8 +11,7 @@
 
     - name: run ifconfig with su
       command: >
-       su nrathi;
-       whoami
-      # become_user: nrathi
-      # become_method: su 
-      # become: yes
+        whoami
+      become_user: nrathi
+      become_method: sudo 
+      become: yes
