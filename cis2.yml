@@ -58,11 +58,11 @@
         command: python3 /opt/genrage_report.py
         become: true
 
-      - name: "copy html report to httpd directory"
-        copy:
-          src: cis_report.html
-          dest: /var/www/html/cis_report.html
-        become: true
+      #- name: "copy html report to httpd directory"
+      #  copy:
+      #    src: cis_report.html
+      #    dest: /var/www/html/cis_report.html
+      #  become: true
 
       - name: "CIS Benchmark mapping complete"
         debug:
