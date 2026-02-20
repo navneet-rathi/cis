@@ -13,3 +13,4 @@
       command: whoami
       become_user: nrathi
       become_method: su 
+      become: yes
