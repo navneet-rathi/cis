@@ -13,3 +13,59 @@
         goss_version:
           release: v0.4.9
           checksum: "sha256:87dd36cfa1b8b50554e6e2ca29168272e26755b19ba5438341f7c66b36decc19"
+  tasks:
+    - name: "CIS Benchmark mapping"
+      debug:
+        msg: "CIS Benchmark mapping complete"
+
+    - name: "install some issential package"
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - httpd
+        - python3-pip
+    - name: Install bottle python package
+      ansible.builtin.pip:
+        name: json2html
+
+    - name: "start httpd service"
+      service:
+        name: httpd
+        state: started
+        enabled: true
+
+    - name: "create index.html file"
+      copy:
+        dest: /opt/genrage_report.py
+        content: |
+            import json
+            from json2html import json2html
+
+            # Load CIS audit JSON file
+            with open('/opt/database-RHEL9-CIS-v2.0.0_pre_scan_1771525939.json') as f:
+                data = json.load(f)
+
+            # Convert JSON to HTML
+            html = json2html.convert(json=data)
+
+            # Write to HTML file
+            with open('cis_report.html', 'w') as f:
+                f.write(html)
+
+            print("HTML report generated: cis_report.html")
+        become: true
+
+    - name: "generate html report"
+      command: python3 /opt/genrage_report.py
+      become: true
+
+    - name: "copy html report to httpd directory"
+      copy:
+        src: cis_report.html
+        dest: /var/www/html/cis_report.html
+      become: true
+
+    - name: "CIS Benchmark mapping complete"
+      debug:
+        msg: "please access http://{{inventory_hostname}}/cis_report.html to view the report"    
