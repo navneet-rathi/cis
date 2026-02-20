@@ -7,8 +7,11 @@
       ansible.builtin.user:
         name: ec2-user
         password: "{{ 'YourSecurePassword' | password_hash('sha512') }}"
-      
 
+    - name: "Setting password "
+      ansible.builtin.debug:
+        msg: "Password for ec2-user has been set. Please change it after first login."
+        
   roles:
     - name: "RHEL9-CIS"
       vars:
