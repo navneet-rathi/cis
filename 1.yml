@@ -5,13 +5,17 @@
   become_user: root
   become_method: su
   tasks:
-    - name: run ifconfig
-      command: ifconfig
-      become_user: nrathi
+    - name: run whoami
+      command: whoami
 
+    # - name: run ifconfig
+    #   command: ifconfig
+    #   become_user: nrathi
+    #   become_method: su
+    #   become: yes
+    
     - name: run ifconfig with su
-      command: >
-        whoami
+      command: whoami
       become_user: nrathi
       become_method: sudo 
       become: yes
