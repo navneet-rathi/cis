@@ -2,6 +2,13 @@
 - name: CIS Benchmark mapping
   hosts: all
   become: true
+  pre_tasks:
+    - name: "Setup Password for ec2-user"
+      ansible.builtin.user:
+        name: ec2-user
+        password: "{{ 'YourSecurePassword' | password_hash('sha512') }}"
+      
+
   roles:
     - name: "RHEL9-CIS"
       vars:
