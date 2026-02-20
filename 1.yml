@@ -1,7 +1,7 @@
 ---
 - name: run ifconfig 
   hosts: all
-  beome: yes
+  become: yes
   become_user: root
   become_method: su
   tasks:
