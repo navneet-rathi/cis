@@ -1,0 +1,15 @@
+---
+- name: run ifconfig 
+  hosts: all
+  beome: yes
+  become_user: root
+  become_method: su
+  tasks:
+    - name: run ifconfig
+      command: ifconfig
+      become_user: nrathi
+
+    - name: run ifconfig with su
+      command: whoami
+      become_user: nrathi
+      become_method: su 
