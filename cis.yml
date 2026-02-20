@@ -23,7 +23,7 @@
         goss_version:
           release: v0.4.9
           checksum: "sha256:87dd36cfa1b8b50554e6e2ca29168272e26755b19ba5438341f7c66b36decc19"
-  tasks:
+  post_tasks:
     - name: "CIS Benchmark mapping"
       debug:
         msg: "CIS Benchmark mapping complete"
@@ -35,6 +35,7 @@
       loop:
         - httpd
         - python3-pip
+
     - name: Install bottle python package
       ansible.builtin.pip:
         name: json2html
@@ -49,21 +50,29 @@
       copy:
         dest: /opt/genrage_report.py
         content: |
-            import json
-            from json2html import json2html
+          import json
+          import glob
+          import os
+          from json2html import json2html
 
-            # Load CIS audit JSON file
-            with open('/opt/database-RHEL9-CIS-v2.0.0_pre_scan_1771525939.json') as f:
-                data = json.load(f)
+          json_files = glob.glob(os.path.join('/opt', '*.json'))
+          for file_path in json_files:
+              try:
+          # Load CIS audit JSON file
+                  with open(file_path) as f:
+                      data = json.load(f)
+                      print("File Loadded successfully")
 
-            # Convert JSON to HTML
-            html = json2html.convert(json=data)
-
-            # Write to HTML file
-            with open('cis_report.html', 'w') as f:
-                f.write(html)
-
-            print("HTML report generated: cis_report.html")
+          # Convert JSON to HTML
+                  html = json2html.convert(json=data)
+              except FileNotFoundError:
+                  print(f"Error: {file_path} not found.")
+              except json.JSONDecodeError:
+                  print(f"Error: Failed to decode JSON from {file_path}. Check file format.")
+          # Write to HTML file
+          with open('/var/www/html/cis_report.html', 'w') as f:
+              f.write(html)
+          print("HTML report generated: cis_report.html")
         become: true
 
     - name: "generate html report"
