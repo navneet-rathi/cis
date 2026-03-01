@@ -34,7 +34,7 @@
       when: "'{{ ansible_user }}' in user_facts.getent_passwd.keys()"
 
   roles:
-    - name: "RHEL9 CIS  Benchmark level1  server"
+    - name: "RHEL9-CIS"
       vars:
 #        setup_audit: true
 #        run_audit: true
@@ -47,7 +47,7 @@
       tags:
         - level1-server
 
-    - name: "RHEL9 CIS  Benchmark level1  server Audit only"
+    - name: "RHEL9-CIS"
       vars:
         setup_audit: true
         run_audit: true
