@@ -3,15 +3,36 @@
   hosts: all
   become: true
   pre_tasks:
+
+    - name: Gather available local users
+      ansible.builtin.getent:
+        database: passwd
+      register: user_facts
+
+    # - name: Confirm ec2-user existence
+    #   ansible.builtin.assert:
+    #     that:
+    #       - "'ec2-user' in user_facts.getent_passwd.keys()"
+    #     fail_msg: "The 'ec2-user' does not exist!"
+    #     success_msg: "The 'ec2-user' exists."
+
     - name: "Setup Password for ec2-user"
       ansible.builtin.user:
         name: ec2-user
         password: "{{ 'YourSecurePassword' | password_hash('sha512') }}"
+      when: "'ec2-user' in user_facts.getent_passwd.keys()"
 
     - name: "Setting password "
       ansible.builtin.debug:
         msg: "Password for ec2-user has been set. Please change it after first login."
-        
+      when: "'ec2-user' in user_facts.getent_passwd.keys()"
+
+    - name: "Setup password for ansible_user "
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        password: "{{ 'primod123' | password_hash('sha512') }}"
+      when: "'{{ ansible_user }}' in user_facts.getent_passwd.keys()"
+
   roles:
     - name: "RHEL9-CIS"
       vars:
