@@ -31,7 +31,7 @@
           permanent: true
           state: enabled
           immediate: true
-          
+
       - name: "create python script to generate html report"
         copy:
           dest: /opt/genrage_report.py
@@ -60,9 +60,17 @@
                 f.write(html)
             print("HTML report generated: cis_report.html")
         become: true
-
+      
       - name: "generate html report"
         command: python3 /opt/genrage_report.py
+        become: true
+        
+      - name: change ownership of html report
+        file:
+          path: /var/www/html/cis_report.html
+          owner: apache
+          group: apache
+          mode: '0644'
         become: true
 
       #- name: "copy html report to httpd directory"
