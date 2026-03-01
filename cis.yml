@@ -40,7 +40,7 @@
 #        run_audit: true
 #        audit_only: true
         rhel9cis_allow_authselect_updates: false
-        rhel9cis_additional_crypto_policy_module:
+        rhel9cis_crypto_policy_ansiblemanaged: false
         rhel9cis_sudoers_exclude_nopasswd_list:
           - "{{ ansible_user }}"
         goss_url: https://github.com/goss-org/goss/releases/download/v0.4.9/goss-linux-arm64
