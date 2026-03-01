@@ -41,6 +41,10 @@
 #        audit_only: true
         rhel9cis_allow_authselect_updates: false
         rhel9cis_crypto_policy_ansiblemanaged: false
+        rhel9cis_warning_banner: |
+          "Unauthorized access to this system is prohibited. 
+          All activities on this system are logged and monitored. 
+          By accessing this system, you consent to such monitoring and logging."
         rhel9cis_sudoers_exclude_nopasswd_list:
           - "{{ ansible_user }}"
         goss_url: https://github.com/goss-org/goss/releases/download/v0.4.9/goss-linux-arm64
