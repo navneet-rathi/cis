@@ -1,0 +1,137 @@
+---
+- name: CIS Benchmark mapping
+  hosts: all
+  become: true
+  pre_tasks:
+
+    - name: Gather available local users
+      ansible.builtin.getent:
+        database: passwd
+      register: user_facts
+
+    # - name: Confirm ec2-user existence
+    #   ansible.builtin.assert:
+    #     that:
+    #       - "'ec2-user' in user_facts.getent_passwd.keys()"
+    #     fail_msg: "The 'ec2-user' does not exist!"
+    #     success_msg: "The 'ec2-user' exists."
+
+    - name: "Setup Password for ec2-user"
+      ansible.builtin.user:
+        name: ec2-user
+        password: "{{ 'primod123' | password_hash('sha512') }}"
+      when: "'ec2-user' not in user_facts"
+
+    - name: "Setting password "
+      ansible.builtin.debug:
+        msg: "Password for ec2-user has been set. Please change it after first login."
+      when: "'ec2-user' not in user_facts"
+
+    - name: "Setup password for ansible_user "
+      ansible.builtin.user:
+        name: "{{ ansible_user }}"
+        password: "{{ 'primod123' | password_hash('sha512') }}"
+      when: "'{{ ansible_user }}' in user_facts"
+
+  roles:
+    - name: "RHEL9-CIS"
+      vars:
+        setup_audit: true
+        run_audit: true
+        audit_only: true
+        rhel9cis_allow_authselect_updates: false
+        rhel9cis_crypto_policy_ansiblemanaged: false
+        rhel9cis_warning_banner: |
+          " This Policy is Applied on RHEL9-CIS Benchmark.
+          Unauthorized access to this system is prohibited. 
+          All activities on this system are logged and monitored. 
+          By accessing this system, you consent to such monitoring and logging.
+          By Anible Automation Platform Team
+          Automation Engineering Team
+          for any new changes please reach out to us."
+        rhel9cis_sudoers_exclude_nopasswd_list:
+          - "{{ ansible_user }}"
+        goss_url: https://github.com/goss-org/goss/releases/download/v0.4.9/goss-linux-arm64
+        goss_version:
+          release: v0.4.9
+          checksum: "sha256:87dd36cfa1b8b50554e6e2ca29168272e26755b19ba5438341f7c66b36decc19"
+      tags:
+        - level1-server
+
+    - name: "RHEL9-CIS"
+      vars:
+        setup_audit: true
+        run_audit: true
+        audit_only: true
+        rhel9cis_allow_authselect_updates: false
+        goss_url: https://github.com/goss-org/goss/releases/download/v0.4.9/goss-linux-arm64
+        goss_version:
+          release: v0.4.9
+          checksum: "sha256:87dd36cfa1b8b50554e6e2ca29168272e26755b19ba5438341f7c66b36decc19"
+      tags:
+        - level1-server         
+  post_tasks:
+    - name: "CIS Benchmark mapping"
+      debug:
+        msg: "CIS Benchmark mapping complete"
+
+    - name: "install some issential package"
+      ansible.builtin.dnf:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - httpd
+        - python3-pip
+
+    - name: Install bottle python package
+      ansible.builtin.pip:
+        name: json2html
+
+    - name: "start httpd service"
+      service:
+        name: httpd
+        state: started
+        enabled: true
+
+    - name: "create index.html file"
+      copy:
+        dest: /opt/genrage_report.py
+        content: |
+          import json
+          import glob
+          import os
+          from json2html import json2html
+
+          json_files = glob.glob(os.path.join('/opt', '*.json'))
+          for file_path in json_files:
+              try:
+          # Load CIS audit JSON file
+                  with open(file_path) as f:
+                      data = json.load(f)
+                      print("File Loadded successfully")
+
+          # Convert JSON to HTML
+                  html = json2html.convert(json=data)
+              except FileNotFoundError:
+                  print(f"Error: {file_path} not found.")
+              except json.JSONDecodeError:
+                  print(f"Error: Failed to decode JSON from {file_path}. Check file format.")
+          # Write to HTML file
+          with open('/var/www/html/cis_report.html', 'w') as f:
+              f.write(html)
+          print("HTML report generated: cis_report.html")
+        become: true
+
+    - name: "generate html report"
+      command: python3 /opt/genrage_report.py
+      become: true
+
+    - name: "copy html report to httpd directory"
+      copy:
+        src: cis_report.html
+        dest: /var/www/html/cis_report.html
+      become: true
+
+    - name: "CIS Benchmark mapping complete"
+      debug:
+        msg: "please access http://{{inventory_hostname}}/cis_report.html to view the report"    
