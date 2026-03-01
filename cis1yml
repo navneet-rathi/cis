@@ -38,7 +38,7 @@
       vars:
         setup_audit: true
         run_audit: true
-        audit_only: true
+#        audit_only: true
         rhel9cis_allow_authselect_updates: false
         rhel9cis_crypto_policy_ansiblemanaged: false
         rhel9cis_warning_banner: |
