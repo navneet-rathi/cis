@@ -19,13 +19,13 @@
     - name: "Setup Password for ec2-user"
       ansible.builtin.user:
         name: ec2-user
-        password: "{{ 'YourSecurePassword' | password_hash('sha512') }}"
-      when: "'ec2-user' in user_facts.getent_passwd.keys()"
+        password: "{{ 'primod123' | password_hash('sha512') }}"
+      when: "'ec2-user' not in user_facts.getent_passwd.keys()"
 
     - name: "Setting password "
       ansible.builtin.debug:
         msg: "Password for ec2-user has been set. Please change it after first login."
-      when: "'ec2-user' in user_facts.getent_passwd.keys()"
+      when: "'ec2-user' not in user_facts.getent_passwd.keys()"
 
     - name: "Setup password for ansible_user "
       ansible.builtin.user:
