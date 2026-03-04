@@ -101,6 +101,7 @@
           import json
           import glob
           import os
+          from collections import OrderedDict
           from json2html import json2html
 
           json_files = glob.glob(os.path.join('/opt', '*.json'))
