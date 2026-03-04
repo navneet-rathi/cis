@@ -1,0 +1,38 @@
+---
+- name: Send Email Notification
+  hosts: localhost
+  connection: local
+  vars:
+    # # SMTP Server Details
+    # smtp_host: "smtp.gmail.com"
+    # smtp_port: 587
+    # smtp_user: "your-email@gmail.com"
+    # smtp_pass: "your-app-password"  # Use Ansible Vault for this!
+    
+    # Email Content
+    email_to: "admin@example.com"
+    email_subject: "ALERT: File Integrity Deviation Detected"
+
+  tasks:
+    - name: Email Alert if fail server is unreachable
+    #  when: ping_result.unreachable is defined
+      mail:
+        host: smtp.gmail.com
+        port: 587
+        subtype: html
+        to:
+        - "nrathi@redhat.com"
+        subject: "Alert: File integrity is violated on {{ inventory_hostname }}"
+        body: | 
+          <h2>File Integrity Alert</h2>
+          <p>Dear Admin,</p>
+          <p>An integrity deviation has been detected on server <strong>{{ inventory_hostname }}</strong>.</p>
+          <p>we have identified the issue and are taking corrective actions. on file {{event.alert.label.file}}</p>
+          <p>Please investigate the issue as soon as possible.</p>
+          <p>Best Regards,<br/>Ansible Automation</p> 
+
+        username: "dmeonavneet@gmail.com"
+        password: "rbfqhoincpyouxqk"
+      run_once: true  
+      delegate_to: 127.0.0.1
+      changed_when: True   
