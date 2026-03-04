@@ -41,6 +41,7 @@
 #        audit_only: true
         rhel9cis_allow_authselect_updates: false
         rhel9cis_crypto_policy_ansiblemanaged: false
+        skip_reboot: true
         rhel9cis_warning_banner: |
           " This Policy is Applied on RHEL9-CIS Benchmark.
           Unauthorized access to this system is prohibited. 
