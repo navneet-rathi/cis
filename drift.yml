@@ -10,8 +10,8 @@
     textfile_dir: /var/lib/node_exporter/textfile_collector
     run_interval: 60  # Run every 60 seconds
     dirs_to_monitor:
-      - /opt
-      - /var/www
+      - /etc
+      - /home
   tasks:
 
     - name: Ensure Python3 is installed (RHEL 9 default)
@@ -41,14 +41,9 @@
         group: root
         mode: '0750'
 ## Its ok if baseline file does not exist, the script will create it on first run
-    - name: Ensure baseline file exists
-      ansible.builtin.file:
-        path: "{{ baseline_file }}"
-        state: touch
-        owner: root
-        group: root
-        mode: '0600'
-      ignore_errors: yes
+    # - name: Ensure baseline file exists
+    #   ansible.builtin.shell: "/usr/bin/python3 {{ monitor_script_path }} --dirs {{ dirs_to_monitor | join(' ') }}"
+    #   ignore_errors: yes
 
     # - name: Create systemd service for etc monitor
     #   ansible.builtin.copy:
