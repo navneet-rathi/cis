@@ -60,18 +60,24 @@
 
     - name: Create systemd timer for etc monitor every 2minutes
       ansible.builtin.copy:
-        dest: /etc/systemd/system/etc-monitor.timer
+        dest: /etc/systemd/system/fim-monitor.service
         content: |
           [Unit]
-          Description=Run /etc monitor every 5 minutes
+          Description=Continuous File Integrity Monitor for Prometheus
+          After=network.target
 
-          [Timer]
-          OnBootSec=2min
-          OnUnitActiveSec=2min
-          Unit=etc-monitor.service
+          [Service]
+          # Run as root to ensures read access to all /etc files
+          User=root
+          ExecStart=/usr/bin/python3 /usr/local/bin/fim_monitor.py --dirs /opt /var/www --interval 30
+          Restart=always
+          RestartSec=60
+          # Standardize logging
+          StandardOutput=journal
+          StandardError=inherit
 
           [Install]
-          WantedBy=timers.target
+          WantedBy=multi-user.target
 
     - name: Reload systemd
       ansible.builtin.systemd:
