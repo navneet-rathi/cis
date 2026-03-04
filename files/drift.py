@@ -38,7 +38,6 @@ def scan(directories):
     return data
 
 def write_metrics(diffs):
-    """Writes detailed metrics with file labels."""
     try:
         temp_file = METRIC_FILE + ".tmp"
         with open(temp_file, "w") as f:
@@ -46,12 +45,11 @@ def write_metrics(diffs):
             f.write("# TYPE etc_file_deviation gauge\n")
             
             if not diffs:
-                # If no changes, ensure the metric exists but is set to 0
                 f.write("etc_file_deviation{file=\"none\",action=\"none\"} 0\n")
             else:
                 for file_path, action in diffs.items():
-                    # Prometheus labels use double quotes; we escape path backslashes
-                    safe_path = file_path.replace("\\", "\\\\")
+                    # Escaping for Prometheus label format
+                    safe_path = file_path.replace("\\", "\\\\").replace('"', '\\"')
                     f.write(f'etc_file_deviation{{file="{safe_path}",action="{action}"}} 1\n')
         
         os.replace(temp_file, METRIC_FILE)
@@ -62,31 +60,37 @@ def run_fim(directories):
     current = scan(directories)
     baseline = {}
     
-    if os.path.exists(BASELINE_FILE):
-        try:
-            with open(BASELINE_FILE, "r") as f:
-                baseline = json.load(f)
-        except: pass
+    # Check if baseline exists. If not, create it ONCE.
+    if not os.path.exists(BASELINE_FILE):
+        logging.info("No baseline found. Creating initial baseline...")
+        with open(BASELINE_FILE, "w") as f:
+            json.dump(current, f, indent=4)
+        write_metrics({}) # Report 0 on first run
+        return
 
-    # Identify specific deviations
+    try:
+        with open(BASELINE_FILE, "r") as f:
+            baseline = json.load(f)
+    except Exception as e:
+        logging.error(f"Failed to read baseline: {e}")
+        return
+
+    # Compare without updating the baseline file
     diffs = {}
-    
-    # Check for modifications or additions
     for path, h in current.items():
         if path not in baseline:
             diffs[path] = "added"
         elif baseline[path] != h:
             diffs[path] = "modified"
             
-    # Check for deletions
     for path in baseline:
         if path not in current:
             diffs[path] = "deleted"
 
     if diffs:
-        logging.warning(f"Deviations found: {len(diffs)} files")
-        with open(BASELINE_FILE, "w") as f:
-            json.dump(current, f)
+        logging.warning(f"ALERT: {len(diffs)} deviations from baseline detected!")
+    else:
+        logging.info("Scan complete: System matches baseline.")
     
     write_metrics(diffs)
 
