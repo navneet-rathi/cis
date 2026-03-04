@@ -1,0 +1,84 @@
+---
+- name: Deploy /etc monitoring with Prometheus integration (RHEL 9)
+  hosts: rhel9_servers
+  become: yes
+  gather_facts: yes
+
+  vars:
+    monitor_script_path: /opt/etc_monitor.py
+    baseline_file: /var/lib/etc_baseline.json
+    textfile_dir: /var/lib/node_exporter/textfile_collector
+
+  tasks:
+
+    - name: Ensure Python3 is installed (RHEL 9 default)
+      ansible.builtin.package:
+        name: python3
+        state: present
+
+    - name: Ensure node_exporter user exists
+      ansible.builtin.user:
+        name: node_exporter
+        system: yes
+      ignore_errors: yes
+
+    - name: Ensure textfile collector directory exists
+      ansible.builtin.file:
+        path: "{{ textfile_dir }}"
+        state: directory
+        owner: node_exporter
+        group: node_exporter
+        mode: '0755'
+
+    - name: Deploy etc monitor script
+      ansible.builtin.copy:
+        src: files/etc_monitor.py
+        dest: "{{ monitor_script_path }}"
+        owner: root
+        group: root
+        mode: '0750'
+
+    - name: Ensure baseline file exists
+      ansible.builtin.file:
+        path: "{{ baseline_file }}"
+        state: touch
+        owner: root
+        group: root
+        mode: '0600'
+
+    - name: Create systemd service for etc monitor
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/etc-monitor.service
+        content: |
+          [Unit]
+          Description=/etc File Integrity Monitor
+          After=network.target
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/bin/python3 {{ monitor_script_path }}
+
+    - name: Create systemd timer for etc monitor every 2minutes
+      ansible.builtin.copy:
+        dest: /etc/systemd/system/etc-monitor.timer
+        content: |
+          [Unit]
+          Description=Run /etc monitor every 5 minutes
+
+          [Timer]
+          OnBootSec=2min
+          OnUnitActiveSec=2min
+          Unit=etc-monitor.service
+
+          [Install]
+          WantedBy=timers.target
+
+    - name: Reload systemd
+      ansible.builtin.systemd:
+        daemon_reload: yes
+
+    - name: Enable and start timer
+      ansible.builtin.systemd:
+        name: etc-monitor.timer
+        enabled: yes
+        state: started
