@@ -35,12 +35,12 @@
 
     - name: Deploy etc monitor script
       ansible.builtin.copy:
-        src: files/etc_monitor.py
+        src: files/drift.py
         dest: "{{ monitor_script_path }}"
         owner: root
         group: root
         mode: '0750'
-
+## Its ok if baseline file does not exist, the script will create it on first run
     - name: Ensure baseline file exists
       ansible.builtin.file:
         path: "{{ baseline_file }}"
@@ -48,18 +48,19 @@
         owner: root
         group: root
         mode: '0600'
+      ignore_errors: yes
 
-    - name: Create systemd service for etc monitor
-      ansible.builtin.copy:
-        dest: /etc/systemd/system/etc-monitor.service
-        content: |
-          [Unit]
-          Description=/etc File Integrity Monitor
-          After=network.target
+    # - name: Create systemd service for etc monitor
+    #   ansible.builtin.copy:
+    #     dest: /etc/systemd/system/etc-monitor.service
+    #     content: |
+    #       [Unit]
+    #       Description=/etc File Integrity Monitor
+    #       After=network.target
 
-          [Service]
-          Type=oneshot
-          ExecStart=/usr/bin/python3 {{ monitor_script_path }}
+    #       [Service]
+    #       Type=oneshot
+    #       ExecStart=/usr/bin/python3 {{ monitor_script_path }}
 
     - name: Create systemd timer for etc monitor every 2minutes
       ansible.builtin.copy:
