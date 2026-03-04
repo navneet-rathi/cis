@@ -8,7 +8,7 @@
     monitor_script_path: /opt/etc_monitor.py
     baseline_file: /var/lib/etc_baseline.json
     textfile_dir: /var/lib/node_exporter/textfile_collector
-
+    run_interval: 60  # Run every 60 seconds
   tasks:
 
     - name: Ensure Python3 is installed (RHEL 9 default)
@@ -69,7 +69,7 @@
           [Service]
           # Run as root to ensures read access to all /etc files
           User=root
-          ExecStart=/usr/bin/python3 /usr/local/bin/fim_monitor.py --dirs /opt /var/www --interval 30
+          ExecStart=/usr/bin/python3 /usr/local/bin/fim_monitor.py --dirs /opt /var/www --interval {{ run_interval }}
           Restart=always
           RestartSec=60
           # Standardize logging
@@ -85,6 +85,6 @@
 
     - name: Enable and start timer
       ansible.builtin.systemd:
-        name: etc-monitor.timer
+        name: fim-monitor.service
         enabled: yes
         state: started
