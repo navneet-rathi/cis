@@ -69,6 +69,12 @@
           # Run as root to ensures read access to all /etc files
           User=root
           ExecStart=/usr/bin/python3 {{ monitor_script_path }} --dirs {{ dirs_to_monitor | join(' ') }} --interval {{ run_interval }}
+          # FORCE RELOAD LOGIC:
+          # When 'reload' is called, delete the baseline file.
+          # The script will see the file is missing on its next check and regenerate it.
+          ExecReload=/usr/bin/rm -f /var/lib/etc_baseline.json
+          # After deleting, we send a SIGHUP to the script to wake it up if it's sleeping
+          ExecReload=/bin/kill -HUP $MAINPID
           Restart=always
           RestartSec=60
           # Standardize logging
