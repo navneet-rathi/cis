@@ -1,7 +1,7 @@
 ---
 - name: Send Email Notification
-  hosts: localhost
-  connection: local
+  hosts: all
+#  connection: local
   vars:
     # # SMTP Server Details
     # smtp_host: "smtp.gmail.com"
@@ -30,7 +30,6 @@
           <p>we have identified the issue and are taking corrective actions. on file {{event.alert.label.file}}</p>
           <p>Please investigate the issue as soon as possible.</p>
           <p>Best Regards,<br/>Ansible Automation</p> 
-
         username: "dmeonavneet@gmail.com"
         password: "rbfqhoincpyouxqk"
       run_once: true  
