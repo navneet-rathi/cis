@@ -15,7 +15,7 @@
   tasks:
 
     - name: Ensure Python3 is installed (RHEL 9 default)
-      ansible.builtin.package:
+      ansible.builtin.dnf:
         name: python3
         state: present
 
