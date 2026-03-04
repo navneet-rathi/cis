@@ -1,6 +1,6 @@
 ---
 - name: Deploy /etc monitoring with Prometheus integration (RHEL 9)
-  hosts: rhel9_servers
+  hosts: all
   become: yes
   gather_facts: yes
 
