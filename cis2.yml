@@ -26,7 +26,7 @@
           enabled: true
 
       - name: make sure port 80 is allowed in firewall
-        ansible.builtin.firewalld:
+        ansible.posix.firewalld:
           service: http
           permanent: true
           state: enabled
