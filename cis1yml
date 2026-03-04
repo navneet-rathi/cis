@@ -109,7 +109,7 @@
               try:
           # Load CIS audit JSON file
                   with open(file_path) as f:
-                      data = json.load(f)
+                      data = json.load(f,object_pairs_hook=OrderedDict)
                       print("File Loadded successfully")
 
           # Convert JSON to HTML
