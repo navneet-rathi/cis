@@ -27,7 +27,7 @@
           <h2>File Integrity Alert</h2>
           <p>Dear Admin,</p>
           <p>An integrity deviation has been detected on server <strong>{{ inventory_hostname }}</strong>.</p>
-          <p>we have identified the issue and are taking corrective actions. on file {{event.alert.label.file}}</p>
+          <p>we have identified the issue and are taking corrective actions. on file {{event.alert.labels.file}}</p>
           <p>Please investigate the issue as soon as possible.</p>
           <p>Best Regards,<br/>Ansible Automation</p> 
         username: "dmeonavneet@gmail.com"
