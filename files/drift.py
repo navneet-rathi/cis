@@ -4,13 +4,39 @@ import json
 import argparse
 import time
 import logging
+import signal
+import fnmatch
 
 # Configuration
 BASELINE_FILE = "/var/lib/etc_baseline.json"
 METRIC_FILE = "/var/lib/node_exporter/textfile_collector/etc_changes.prom"
-EXCLUDED = {"/etc/os-release", "/etc/redhat-release", "/etc/system-release"}
+
+# New: Add patterns here. 
+# Use '*' for wildcards. e.g., "*/insights/*" ignores everything in an insights folder.
+IGNORE_PATTERNS = {
+    "/etc/os-release", 
+    "/etc/redhat-release", 
+    "*/insights/*"
+
+}
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+RENEW_BASELINE_REQUESTED = False
+
+def handle_reload(signum, frame):
+    global RENEW_BASELINE_REQUESTED
+    logging.info("SIGHUP received. Force renewing baseline...")
+    RENEW_BASELINE_REQUESTED = True
+
+signal.signal(signal.SIGHUP, handle_reload)
+
+def is_ignored(path):
+    """Checks if a path matches any of the ignore patterns."""
+    for pattern in IGNORE_PATTERNS:
+        if fnmatch.fnmatch(path, pattern):
+            return True
+    return False
 
 def sha256(file_path):
     if os.path.islink(file_path): return None
@@ -32,7 +58,11 @@ def scan(directories):
         for root, _, files in os.walk(target_dir):
             for name in files:
                 path = os.path.join(root, name)
-                if path in EXCLUDED: continue
+                
+                # Check against the new pattern matcher
+                if is_ignored(path):
+                    continue
+                    
                 h = sha256(path)
                 if h: data[path] = h
     return data
@@ -43,29 +73,30 @@ def write_metrics(diffs):
         with open(temp_file, "w") as f:
             f.write("# HELP etc_file_deviation Details of changed files\n")
             f.write("# TYPE etc_file_deviation gauge\n")
-            
             if not diffs:
-                f.write("etc_file_deviation{file=\"none\",action=\"none\"} 0\n")
+                f.write('etc_file_deviation{file="none",action="none"} 0\n')
             else:
                 for file_path, action in diffs.items():
-                    # Escaping for Prometheus label format
                     safe_path = file_path.replace("\\", "\\\\").replace('"', '\\"')
                     f.write(f'etc_file_deviation{{file="{safe_path}",action="{action}"}} 1\n')
-        
         os.replace(temp_file, METRIC_FILE)
     except IOError as e:
         logging.error(f"Error writing metric: {e}")
 
 def run_fim(directories):
+    global RENEW_BASELINE_REQUESTED
     current = scan(directories)
-    baseline = {}
     
-    # Check if baseline exists. If not, create it ONCE.
+    if RENEW_BASELINE_REQUESTED:
+        if os.path.exists(BASELINE_FILE):
+            os.remove(BASELINE_FILE)
+        RENEW_BASELINE_REQUESTED = False
+
     if not os.path.exists(BASELINE_FILE):
-        logging.info("No baseline found. Creating initial baseline...")
+        logging.info("Generating new baseline...")
         with open(BASELINE_FILE, "w") as f:
             json.dump(current, f, indent=4)
-        write_metrics({}) # Report 0 on first run
+        write_metrics({})
         return
 
     try:
@@ -75,23 +106,13 @@ def run_fim(directories):
         logging.error(f"Failed to read baseline: {e}")
         return
 
-    # Compare without updating the baseline file
     diffs = {}
     for path, h in current.items():
-        if path not in baseline:
-            diffs[path] = "added"
-        elif baseline[path] != h:
-            diffs[path] = "modified"
-            
+        if path not in baseline: diffs[path] = "added"
+        elif baseline[path] != h: diffs[path] = "modified"
     for path in baseline:
-        if path not in current:
-            diffs[path] = "deleted"
+        if path not in current: diffs[path] = "deleted"
 
-    if diffs:
-        logging.warning(f"ALERT: {len(diffs)} deviations from baseline detected!")
-    else:
-        logging.info("Scan complete: System matches baseline.")
-    
     write_metrics(diffs)
 
 def main():
