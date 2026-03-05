@@ -11,7 +11,7 @@
     run_interval: 60  # Run every 60 seconds
     dirs_to_monitor:
       - /etc
-      - /home
+      - /opt
   tasks:
 
     - name: Ensure Python3 is installed (RHEL 9 default)
