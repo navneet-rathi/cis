@@ -92,4 +92,4 @@
       ansible.builtin.systemd:
         name: fim-monitor.service
         enabled: yes
-        state: started
+        state: restarted
