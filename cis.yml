@@ -34,7 +34,7 @@
       ansible.builtin.user:
         name: "{{ ansible_user }}"
         password: "{{ 'primod123' | password_hash('sha512') }}"
-      when: "'{{ ansible_user }}' in user_facts"
+      #when: "'{{ ansible_user }}' in user_facts"
   roles:
     - name: "RHEL9-CIS"
       vars:
