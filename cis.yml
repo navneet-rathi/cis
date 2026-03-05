@@ -8,27 +8,27 @@
         database: passwd
       register: user_facts
 
-    - name: "Setup Password for ec2-user"
-      ansible.builtin.user:
-        name: ec2-user
-        password: "{{ 'primod123' | password_hash('sha512') }}"
-      when: "'ec2-user' in user_facts"
+    # - name: "Setup Password for ec2-user"
+    #   ansible.builtin.user:
+    #     name: ec2-user
+    #     password: "{{ 'primod123' | password_hash('sha512') }}"
+    #   when: "'ec2-user' in user_facts"
 
-    - name: "Setting password"
-      ansible.builtin.debug:
-        msg: "Password for ec2-user has been set. Please change it after first login."
-      when: "'ec2-user' in user_facts"
+    # - name: "Setting password"
+    #   ansible.builtin.debug:
+    #     msg: "Password for ec2-user has been set. Please change it after first login."
+    #   when: "'ec2-user' in user_facts"
 
-    - name: "Setup Password for azureuser"
-      ansible.builtin.user:
-        name: azureuser
-        password: "{{ 'primod123' | password_hash('sha512') }}"
-      when: "'azureuser' in user_facts"
+    # - name: "Setup Password for azureuser"
+    #   ansible.builtin.user:
+    #     name: azureuser
+    #     password: "{{ 'primod123' | password_hash('sha512') }}"
+    #   when: "'azureuser' in user_facts"
 
-    - name: "Setting password"
-      ansible.builtin.debug:
-        msg: "Password for azureuser has been set. Please change it after first login."
-      when: "'azureuser' in user_facts"
+    # - name: "Setting password"
+    #   ansible.builtin.debug:
+    #     msg: "Password for azureuser has been set. Please change it after first login."
+    #   when: "'azureuser' in user_facts"
 
     - name: "Setup password for ansible_user"
       ansible.builtin.user:
