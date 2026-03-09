@@ -16,7 +16,7 @@ METRIC_FILE = "/var/lib/node_exporter/textfile_collector/etc_changes.prom"
 IGNORE_PATTERNS = {
     "/etc/os-release", 
     "/etc/redhat-release", 
-    "*/insights/*"
+    "/etc/insights/*"
 
 }
 
